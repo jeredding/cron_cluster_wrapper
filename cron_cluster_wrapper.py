@@ -53,7 +53,7 @@ def find_cluster_members(clustat_output):
 			print " %s " % match.group(0)
 
 
-
+#  this does the trick, but ugly.
 for line in m:
 	localmatch = re.search('.*(?=[0-9] Online.*Local.*)', line)
 	match = re.search('.*(?=[0-9] Online)', line)
@@ -62,7 +62,7 @@ for line in m:
 	elif match is not None:
 		print " %s -" % match.group(0)
 
-
+# this does the trick better, but not WELL - we can't get the second capture for some reason.  Gotta figure that out
 for line in m:
 	match = re.search('^ ([A-Za-z0-9_-]+).*Online.*(Local)?.*', line)
 	match.groups()
