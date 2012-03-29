@@ -43,32 +43,16 @@ def find_cluster_members(clustat_output):
 	"""finds the list of cluster members"""
 	# regular expression: Online, match, and grab first element in row, check to see if Local is there too
 
+	nodes = []  #nodes list
 
 	for line in clustat_output:
-		localmatch = re.search('.*(?=[0-9] Online.*Local.*)', line)
-		match = re.search('.*(?=[0-9] Online)', line)
+		match = re.search('^ ([A-Za-z0-9_-]+).*Online, (Local)?.*', line)
+		nodes = append(match.group(1))
+		local = match.group(2)
 		if localmatch is not None:
 			print "LOCAL: %s" % localmatch.group(0)
 		elif match is not None:
 			print " %s " % match.group(0)
-
-
-#  this does the trick, but ugly.
-for line in m:
-	localmatch = re.search('.*(?=[0-9] Online.*Local.*)', line)
-	match = re.search('.*(?=[0-9] Online)', line)
-	if localmatch is not None:
-		print "LOCAL: %s -" % localmatch.group(0)
-	elif match is not None:
-		print " %s -" % match.group(0)
-
-# this does the trick better, but not WELL - we can't get the second capture for some reason.  Gotta figure that out
-for line in m:
-	match = re.search('^ ([A-Za-z0-9_-]+).*Online.*(Local)?.*', line)
-	match.groups()
-	if match is not None:
-		print " %s ;" % [match.group(1,2)]
-
 
 	pass
 
