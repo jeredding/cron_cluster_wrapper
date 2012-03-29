@@ -13,7 +13,7 @@ is running the service, then the wrapper will execute the --script
 Example:
 
 ##### in crontab:
-0 2 0 0 0 /usr/local/sbin/cron_cluster_wrapper.py --node thishost --service mysql --script=/usr/local/sbin/myscript.sh 
+0 2 0 0 0 /usr/local/sbin/cron_cluster_wrapper.py --service mysql --script=/usr/local/sbin/myscript.sh 
 
 
 """
@@ -22,11 +22,8 @@ Example:
 import os
 import subprocess
 import re
-import logging
 import optparse
 
-logging.basicConfig ( level=logging.INFO, 
-					 format='%(asctime)s %(levelname)s %(message)s' )
 
 #cmd_clustat='/usr/sbin/clustat'
 cmd_clustat='./clustat'
@@ -38,18 +35,18 @@ def grab_clustat_output( ):
 	p = subprocess.Popen( '/usr/sbin/clustat',stdout=subprocess.PIPE ).stdout
 	return p.readlines( )
 
-
 def find_cluster_members( clustat_output ):
-	"""finds the list of cluster members
+	"""
+	finds the list of cluster members
 
-		this function moves through the list clustat_output that is the output
-		of running the clustat binary in RHEL cluster, and snags cluster
-		members based on their Online status.  It finds the node the 
-		clustat command is running on by the Local keyword in the output.
+	this function moves through the list clustat_output that is the output
+	of running the clustat binary in RHEL cluster, and snags cluster
+	members based on their Online status.  It finds the node the 
+	clustat command is running on by the Local keyword in the output.
 
-		the return value is the dictionary containing the node list. 
+	the return value is the dictionary containing the node list. 
 
-		supporting more than 2 node clusters wouldn't be hard, but I'm being lazy.
+	supporting more than 2 node clusters wouldn't be hard, but I'm being lazy.
 
 	"""
 	# nodelist: dict providing local and sibling node entries
@@ -57,23 +54,43 @@ def find_cluster_members( clustat_output ):
 
 	for line in clustat_output:
 		match = re.search( '^ ([A-Za-z0-9_-]+).*Online, (Local)?.*', line )
-		if match.group(2) is not None:
-			nodelist['local'] = match.group(1) 
-		else:
-			nodelist['node']= match.group(1) 
+		if match is not None:
+			if match.group(2) is not None:
+				nodelist['local'] = match.group(1) 
+			else:
+				nodelist['node']= match.group(1) 
 
 	reuturn nodelist
+
+def is_service_running(service, thishost, clustat_output ):
+	"""
+	finds if service is running based on clustat_output list 
+	"""
+	for line in clustat_output:
+		match = re.search( '^ service:(%s)[ ]+(%s)[ ]+(started).*' % ( svc, host ) , line )
+		if match is not None:
+			return True
+		else:
+			return False
 
 
 def main():
 	usage = "usage: %prog [options]"
 	parser = optparse.OptionParser(usage)
+    parser.add_option("-s", "--service", action="store",
+                      help="service name",)
+    opts, ____ = parser.parse_args()
 
-	parser.add_option
+    # run clustat, get output
+    output=grab_clustat_output()
+    # give output to find our cluster members
+    cluster_members=find_cluster_members(output)
 
-
-
-	pass
-
-
+    # if the service is running, on the local node, pass the output and script will:
+    if is_service_running( opts.service, cluster_members['local'], output ):
+    	#   exit 0 if the node is running the service
+    	sys.exit(0)
+    else:
+    	#   exit 1 if the node is NOT running the service
+    	sys.exit(1)
 
