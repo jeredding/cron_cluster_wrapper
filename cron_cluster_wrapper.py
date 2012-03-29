@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # cron_cluster_wrapper.py
 """
-This is a wrapper that is cluster-aware for cronjobs.
+This is a wrapper that is cluster-aware for cronjobs.  Two-node clusters.
 
 it runs clustat and based on the output, finds cluster members and what 
 services are running on that node.  the argument --service specifies the
@@ -25,36 +25,44 @@ import re
 import logging
 import optparse
 
-logging.basicConfig (level=logging.INFO, 
-					 format='%(asctime)s %(levelname)s %(message)s')
+logging.basicConfig ( level=logging.INFO, 
+					 format='%(asctime)s %(levelname)s %(message)s' )
 
-cmd_clustat='/usr/sbin/clustat'
+#cmd_clustat='/usr/sbin/clustat'
+cmd_clustat='./clustat'
 
-
-def grab_clustat_output():
+def grab_clustat_output( ):
 	""" 
 	this runs clustat and returns the output in a list.  from there, deal with it.
 	"""
-	p = subprocess.Popen('/usr/sbin/clustat',stdout=subprocess.PIPE).stdout
-	return p.readlines()
+	p = subprocess.Popen( '/usr/sbin/clustat',stdout=subprocess.PIPE ).stdout
+	return p.readlines( )
 
 
-def find_cluster_members(clustat_output):
-	"""finds the list of cluster members"""
-	# regular expression: Online, match, and grab first element in row, check to see if Local is there too
+def find_cluster_members( clustat_output ):
+	"""finds the list of cluster members
 
-	nodes = []  #nodes list
+		this function moves through the list clustat_output that is the output
+		of running the clustat binary in RHEL cluster, and snags cluster
+		members based on their Online status.  It finds the node the 
+		clustat command is running on by the Local keyword in the output.
+
+		the return value is the dictionary containing the node list. 
+
+		supporting more than 2 node clusters wouldn't be hard, but I'm being lazy.
+
+	"""
+	# nodelist: dict providing local and sibling node entries
+	nodelist = {}
 
 	for line in clustat_output:
-		match = re.search('^ ([A-Za-z0-9_-]+).*Online, (Local)?.*', line)
-		nodes = append(match.group(1))
-		local = match.group(2)
-		if localmatch is not None:
-			print "LOCAL: %s" % localmatch.group(0)
-		elif match is not None:
-			print " %s " % match.group(0)
+		match = re.search( '^ ([A-Za-z0-9_-]+).*Online, (Local)?.*', line )
+		if match.group(2) is not None:
+			nodelist['local'] = match.group(1) 
+		else:
+			nodelist['node']= match.group(1) 
 
-	pass
+	reuturn nodelist
 
 
 def main():
@@ -66,3 +74,6 @@ def main():
 
 
 	pass
+
+
+
