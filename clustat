@@ -1,0 +1,17 @@
+#!/bin/bash
+
+cat <<EOF
+Cluster Status for mnemosyne @ Wed Mar 28 19:01:48 2012
+Member Status: Quorate
+
+ Member Name                                                     ID   Status
+ ------ ----                                                     ---- ------
+ hb-mnemosyne-mcs                                                    1 Online, rgmanager
+ hb-mnemosyne-jck                                                    2 Online, Local, rgmanager
+
+ Service Name                                                     Owner (Last)                                                     State         
+ ------- ----                                                     ----- ------                                                     -----         
+ service:ha-nfs                                                   (none)                                                           disabled       
+ service:tracs-mysql                                              hb-mnemosyne-jck                                                 started       
+ service:tracs-nfs                                                hb-mnemosyne-jck                                                 started       
+EOF
