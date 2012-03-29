@@ -27,8 +27,8 @@ import subprocess
 import re
 import optparse
 
-#cmd_clustat='/usr/sbin/clustat'
-cmd_clustat='./clustat_nonmaster'
+cmd_clustat='/usr/sbin/clustat'
+#cmd_clustat='./clustat_nonmaster'
 
 def grab_clustat_output( ):
     """ 
